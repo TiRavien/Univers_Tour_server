@@ -22,6 +22,36 @@ async function run() {
 
         const database = client.db("universTour");
         const offeringsCollection = database.collection("offerings");
+        const orderCollection = database.collection("orders")
+
+        //POST API
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            const query = { serviceId: order.serviceId, email: order.email };
+            const findOrder = orderCollection.findOne(query);
+            if (findOrder) {
+                res.json("Data already added")
+            }
+            else {
+                const result = await orderCollection.insertOne(order);
+                res.json(result);
+            }
+
+        });
+
+        //GET API
+        app.get('/order/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {email: email};
+            const result = await orderCollection.find(query).toArray();
+            res.json(result);
+        });
+
+        //GET API
+        app.get('/order', async(req, res) => {
+            const result = await orderCollection.find({}).toArray();
+            res.json(result);
+        })
 
         //GET API
         app.get('/offerings', async (req, res) => {
@@ -36,7 +66,7 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const offering = await offeringsCollection.findOne(query);
             res.json(offering);
-        })
+        });
 
         //POST API
         app.post('/offerings', async (req, res) => {
@@ -45,7 +75,8 @@ async function run() {
             const result = await offeringsCollection.insertOne(offering)
             console.log(result);
             res.json(result)
-        })
+        });
+
     }
     finally {
         // await client.close();
